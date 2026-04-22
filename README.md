@@ -106,12 +106,3 @@ nyayabot/
 │   └── requirements.txt
 └── README.md
 ```
-
----
-
-## Status
-
-> Round 1 — Idea Submission (April 2026)
-
-Phase 2 (prototype build): April 28 – May 4
-Phase 3 (onsite hackathon): May 15–16, Taj Yeshwantpur, Bengaluru
