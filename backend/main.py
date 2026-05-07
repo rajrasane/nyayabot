@@ -127,10 +127,10 @@ Extract this exact structure:
   "directives": [
     {{
       "id": "directive-1",
-      "text": "exact text of the directive or order",
+      "text": "CRITICAL: EXACT QUOTE from the document text showing the directive or order. DO NOT summarize.",
       "page_number": 1,
       "action_required": "comply",
-      "deadline": "specific date or 'within X days of order' or 'not specified'",
+      "deadline": "e.g., '6 weeks', '14 days', '10th April 2026', or 'not specified'",
       "responsible_department": "department name or 'State of Karnataka' or 'not specified'",
       "confidence": 0.85
     }}
@@ -142,6 +142,7 @@ Rules:
 - confidence must be a float between 0.0 and 1.0
 - Extract ALL directives that require action from any government party
 - If a field is unknown, use "not specified"
+- text MUST be an EXACT substring from the document. Do not paraphrase.
 - page_number should be your best estimate of where the directive appears
 
 JUDGMENT TEXT (first 6000 characters):
@@ -279,7 +280,12 @@ async def analyze_case(case_id: str):
                     "model": OLLAMA_MODEL,
                     "prompt": prompt,
                     "stream": False,
-                    "options": {"temperature": 0.1},
+                    "options": {
+                        "temperature": 0.0,
+                        "num_ctx": 8192,
+                        "top_k": 1,
+                        "seed": 42
+                    },
                 },
             )
         result = response.json()

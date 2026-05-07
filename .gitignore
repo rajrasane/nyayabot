@@ -45,3 +45,6 @@ Thumbs.db
 Contest-Context/
 .agents/
 skills-lock.json
+PITCH_DECK.md
+nyayabot.db
+test_fix_pages.py

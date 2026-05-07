@@ -182,3 +182,29 @@ nyayabot/
 - [x] Explainable: every output linked to source page/paragraph
 - [x] Decision support, not automation
 - [x] Fully on-premise: no data leaves government servers
+
+---
+
+## 🧪 How to Demo the Prototype
+
+1. **Open the App:** Navigate to `http://localhost:3000`.
+2. **Review CCMS Integration:** Observe the mocked CCMS cases. Click one to view the Prototype Notice regarding live API ingestion limits.
+3. **Manual Upload (The Core Flow):**
+   - Upload any sample Judgment PDF using the manual upload box.
+   - Wait ~30-60 seconds (depending on your local machine) for Llama 3.2 to extract the structured directives.
+4. **Human Verification:**
+   - You will be redirected to the `/verify` page.
+   - Look at the split-pane viewer. Click through the directives to see the exact text highlighted in the actual PDF.
+   - Notice the "Previous" and "Next" buttons allowing natural workflow.
+   - **Approve** or **Edit** the directives.
+   - Click **Finalize & Submit**.
+5. **Dashboard Routing:**
+   - Navigate to the Dashboard.
+   - Verify that your newly approved directives are listed.
+   - Use the *Sort By* and *Department* filters to organize compliance tasks.
+
+---
+
+## Custom Attachments / Deliverables
+- Ensure the `PITCH_DECK.md` is converted into your presentation slides highlighting the *On-Premise Privacy* and *Human-in-the-Loop* design.
+- Include a screen-recording video demonstrating the upload-to-dashboard pipeline, specifically emphasizing the physical PDF highlighting feature during verification.

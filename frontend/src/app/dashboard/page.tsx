@@ -27,6 +27,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [filterDept, setFilterDept] = useState('All');
   const [filterAction, setFilterAction] = useState('All');
+  const [sortBy, setSortBy] = useState('Newest');
 
   useEffect(() => {
     fetch(`${API}/api/dashboard`)
@@ -40,12 +41,21 @@ export default function DashboardPage() {
 
   const departments = ['All', ...Array.from(new Set(items.map((i) => i.responsible_department)))];
   const actions = ['All', 'comply', 'appeal'];
+  const sortOptions = ['Newest', 'Oldest', 'Department (A-Z)', 'Case Number'];
 
-  const filtered = items.filter((item) => {
+  let filtered = items.filter((item) => {
     const deptMatch = filterDept === 'All' || item.responsible_department === filterDept;
     const actionMatch = filterAction === 'All' || item.action_required === filterAction;
     return deptMatch && actionMatch;
   });
+
+  if (sortBy === 'Oldest') {
+    filtered = [...filtered].reverse();
+  } else if (sortBy === 'Department (A-Z)') {
+    filtered = [...filtered].sort((a, b) => a.responsible_department.localeCompare(b.responsible_department));
+  } else if (sortBy === 'Case Number') {
+    filtered = [...filtered].sort((a, b) => a.case_number.localeCompare(b.case_number));
+  }
 
   const stats = {
     total: items.length,
@@ -108,11 +118,11 @@ export default function DashboardPage() {
                 onChange={(e) => setFilterAction(e.target.value)}
                 className="w-full text-sm p-2 border border-slate-300 bg-white text-slate-900 focus:outline-none focus:border-slate-500 rounded-sm"
               >
-                {actions.map((a) => <option key={a}>{a.toUpperCase()}</option>)}
+                {actions.map((a) => <option key={a} value={a}>{a.toUpperCase()}</option>)}
               </select>
             </div>
 
-            <div>
+            <div className="mb-6">
               <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">Department</label>
               <select
                 value={filterDept}
@@ -120,6 +130,17 @@ export default function DashboardPage() {
                 className="w-full text-sm p-2 border border-slate-300 bg-white text-slate-900 focus:outline-none focus:border-slate-500 rounded-sm"
               >
                 {departments.map((d) => <option key={d}>{d}</option>)}
+              </select>
+            </div>
+
+            <div className="pt-6 border-t border-slate-200">
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">Sort By</label>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="w-full text-sm p-2 border border-slate-300 bg-white text-slate-900 focus:outline-none focus:border-slate-500 rounded-sm"
+              >
+                {sortOptions.map((s) => <option key={s} value={s}>{s.toUpperCase()}</option>)}
               </select>
             </div>
           </div>
