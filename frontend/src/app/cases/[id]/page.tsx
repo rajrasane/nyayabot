@@ -4,10 +4,10 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   ArrowRight, ArrowLeft, FileText, Users, Calendar, BookOpen,
-  ShieldCheck, AlertTriangle, ChevronRight, Cpu, Hash,
+  ShieldCheck, AlertTriangle, ChevronRight, Cpu, Hash, Search,
 } from 'lucide-react';
 
-const API = 'http://localhost:8000';
+const API = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
 
 interface Directive {
   id: string;
