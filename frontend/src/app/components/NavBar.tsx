@@ -18,8 +18,8 @@ export function NavBar() {
         <div
           className="w-9 h-9 rounded-lg flex items-center justify-center transition-transform duration-200 group-hover:scale-105"
           style={{
-            background: 'linear-gradient(135deg, var(--accent), #0d9268)',
-            boxShadow: '0 0 20px rgba(16, 185, 129, 0.2)',
+            background: 'linear-gradient(135deg, var(--accent), #1e293b)',
+            boxShadow: '0 4px 14px rgba(15, 23, 42, 0.15)',
           }}
         >
           <Scale size={18} color="#fff" strokeWidth={2.5} />
@@ -40,8 +40,6 @@ export function NavBar() {
       <div className="flex items-center gap-1">
         <NavLink href="/" icon={<FileText size={15} />} label="Upload" active={pathname === '/'} />
         <NavLink href="/dashboard" icon={<LayoutDashboard size={15} />} label="Dashboard" active={pathname === '/dashboard'} />
-        <NavLink href="/audit" icon={<Activity size={15} />} label="Audit Trail" active={pathname === '/audit'} />
-
         <div
           className="ml-4 flex items-center gap-2 text-xs px-3 py-1.5 rounded-lg"
           style={{

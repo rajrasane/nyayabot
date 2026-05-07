@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
-  Check, X, Pencil, ChevronLeft, ChevronRight, ArrowRight,
+  Check, X, Pencil, ChevronLeft, ChevronRight, ArrowRight, ArrowLeft,
   FileText, ShieldCheck, AlertTriangle, Cpu, Calendar, Building2,
   Save, Loader2,
 } from 'lucide-react';
@@ -127,244 +127,210 @@ export default function VerifyPage() {
     : `${API}/api/pdf/${id}`;
 
   return (
-    <div className="h-[calc(100vh-57px)] flex flex-col" style={{ background: 'var(--background)' }}>
+    <div className="h-[calc(100vh-57px)] flex bg-slate-100">
 
-      {/* Top Bar */}
-      <div className="px-6 py-3 flex items-center justify-between"
-        style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border-subtle)' }}>
-        <div>
-          <div className="flex items-center gap-2 text-xs mb-0.5" style={{ color: 'var(--text-muted)' }}>
-            <Link href="/" style={{ color: 'var(--accent)' }} className="hover:underline">Upload</Link>
-            <ChevronRight size={10} />
-            <Link href={`/cases/${id}`} style={{ color: 'var(--accent)' }} className="hover:underline">Results</Link>
-            <ChevronRight size={10} />
-            <span style={{ color: 'var(--text-primary)' }} className="font-medium">Verify</span>
-          </div>
-          <div className="font-semibold text-sm flex items-center gap-2" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)', fontSize: '1rem' }}>
-            <ShieldCheck size={15} style={{ color: 'var(--accent)' }} />
-            Human Verification — {caseInfo?.case_number}
-          </div>
-        </div>
-        <div className="flex items-center gap-4">
-          <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-            <span style={{ color: approvedCount > 0 ? 'var(--success)' : 'var(--text-muted)' }} className="font-bold">{approvedCount}</span>
-            <span> / {directives.length} approved</span>
-          </div>
-          <button
-            onClick={handleSubmit}
-            disabled={!allReviewed || saving || approvedCount === 0}
-            className="btn-primary flex items-center gap-2 py-2 px-4"
-          >
-            {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-            {saving ? 'Saving...' : `Send ${approvedCount} to Dashboard`}
-            <ArrowRight size={14} />
-          </button>
-        </div>
+      {/* LEFT — PDF Viewer (55%) */}
+      <div className="flex flex-col w-[55%] border-r border-slate-200 bg-white">
+        {/* We can keep a tiny indicator of the page, or remove it entirely. Let's keep it minimal if needed, or just iframe. */}
+        <iframe
+          key={pdfUrl}
+          src={pdfUrl}
+          className="flex-1 w-full h-full"
+          style={{ border: 'none' }}
+          title="Judgment PDF"
+        />
       </div>
 
-      {/* Main Split */}
-      <div className="flex flex-1 overflow-hidden">
+      {/* RIGHT — Verification Panel (45%) */}
+      <div className="w-[45%] flex flex-col bg-white shadow-sm z-10">
 
-        {/* LEFT — PDF Viewer (55%) */}
-        <div className="flex flex-col" style={{ width: '55%', borderRight: '1px solid var(--border-subtle)' }}>
-          <div className="px-4 py-2 text-xs flex items-center gap-2"
-            style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-muted)' }}>
-            <FileText size={12} />
-            <span>Source PDF — verify AI extraction on the right</span>
-            {currentDirective && (
-              <span className="ml-auto font-medium flex items-center gap-1" style={{ color: 'var(--accent)' }}>
-                <span className="w-2 h-2 rounded-full" style={{ background: 'var(--warning)' }} />
-                Highlighted · Page {currentDirective.page_number}
-              </span>
-            )}
+        {/* Top Header Section */}
+        <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-xs text-slate-500">
+              <Link href="/" className="hover:text-slate-800 transition-colors">Cases</Link>
+              <ChevronRight size={12} />
+              <span className="text-slate-800 font-medium">Verify Compliance Directives</span>
+            </div>
           </div>
-          <iframe
-            key={pdfUrl}
-            src={pdfUrl}
-            className="flex-1 w-full"
-            style={{ border: 'none', background: '#fff' }}
-            title="Judgment PDF"
-          />
+          
+          <div className="flex items-center justify-between">
+            <div className="font-semibold text-slate-900 font-serif text-lg flex items-center gap-2">
+              <ShieldCheck size={18} className="text-slate-700" />
+              Case No. {caseInfo?.case_number}
+            </div>
+          </div>
         </div>
 
-        {/* RIGHT — Verification Panel (45%) */}
-        <div className="flex-1 flex flex-col" style={{ background: 'var(--background)' }}>
-
-          {/* Directive Tabs */}
-          <div className="flex overflow-x-auto p-2 gap-1"
-            style={{ borderBottom: '1px solid var(--border-subtle)', background: 'var(--surface)' }}>
+          {/* Navigation Tabs - Formal */}
+          <div className="flex overflow-x-auto border-b border-slate-200 bg-slate-50">
             {directives.map((d, i) => {
               const s = verifications[d.id]?.status || 'pending';
-              const cfg = statusConfig[s];
+              const isCurrent = currentPage === i + 1;
               return (
                 <button
                   key={`tab-${d.id}`}
                   onClick={() => setCurrentPage(i + 1)}
-                  className="flex-shrink-0 px-3 py-1.5 rounded-md text-xs font-semibold transition-all duration-150 flex items-center gap-1 cursor-pointer"
-                  style={{
-                    background: currentPage === i + 1 ? 'var(--accent)' : 'transparent',
-                    color: currentPage === i + 1 ? 'white' : cfg.color,
-                  }}
+                  className={`flex-shrink-0 px-4 py-3 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${
+                    isCurrent 
+                      ? 'border-slate-900 text-slate-900 bg-white' 
+                      : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-100'
+                  }`}
                 >
-                  #{i + 1} {cfg.icon}
+                  Directive {i + 1}
+                  {s === 'approved' && <Check size={14} className="text-emerald-600" />}
+                  {s === 'edited' && <Pencil size={14} className="text-blue-600" />}
+                  {s === 'rejected' && <X size={14} className="text-red-600" />}
                 </button>
               );
             })}
           </div>
 
-          {/* Active Directive */}
+          {/* Active Directive Form */}
           {currentDirective && (
-            <div className="flex-1 overflow-y-auto p-5">
-              <div className="flex items-center gap-2 mb-5">
-                <span className="text-base font-bold" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>
-                  Directive #{currentPage}
-                </span>
-                {statusBadge(verifications[currentDirective.id]?.status || 'pending')}
-                <span className="text-xs ml-auto badge" style={{ background: 'var(--surface-2)', color: 'var(--text-muted)' }}>
-                  <FileText size={10} /> Page {currentDirective.page_number}
-                </span>
+            <div className="flex-1 overflow-y-auto p-6">
+              
+              <div className="mb-6 pb-4 border-b border-slate-100">
+                <h3 className="text-xs uppercase tracking-widest text-slate-500 font-semibold mb-2">Extracted Text</h3>
+                {editingId === currentDirective.id ? (
+                  <textarea
+                    className="w-full text-sm p-3 border border-slate-300 rounded focus:ring-1 focus:ring-slate-900 focus:border-slate-900 resize-none font-serif leading-relaxed text-slate-900"
+                    rows={5}
+                    defaultValue={currentDirective.text}
+                    onChange={(e) => updateEdit(currentDirective.id, 'edited_text', e.target.value)}
+                  />
+                ) : (
+                  <div className="text-sm leading-relaxed p-4 bg-slate-50 border border-slate-200 rounded font-serif text-slate-900">
+                    {verifications[currentDirective.id]?.edited_text || currentDirective.text}
+                  </div>
+                )}
               </div>
 
-              <div className="space-y-4 mb-5">
-                {/* Directive Text */}
+              <div className="grid grid-cols-2 gap-6 mb-6">
                 <div>
-                  <div className="text-xs font-semibold mb-1.5 uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Directive Text</div>
+                  <label className="text-xs uppercase tracking-widest text-slate-500 font-semibold block mb-2">Action Required</label>
                   {editingId === currentDirective.id ? (
-                    <textarea
-                      className="w-full text-sm p-3 rounded-lg resize-none"
-                      style={{ background: 'var(--surface-2)', border: '1px solid var(--accent)', color: 'var(--text-primary)', outline: 'none', fontFamily: 'var(--font-body)' }}
-                      rows={4}
-                      defaultValue={currentDirective.text}
-                      onChange={(e) => updateEdit(currentDirective.id, 'edited_text', e.target.value)}
-                    />
+                    <select
+                      className="w-full text-sm p-2.5 border border-slate-300 rounded focus:ring-1 focus:ring-slate-900 focus:border-slate-900 text-slate-900"
+                      defaultValue={currentDirective.action_required}
+                      onChange={(e) => updateEdit(currentDirective.id, 'edited_action', e.target.value)}
+                    >
+                      <option value="comply">Comply</option>
+                      <option value="appeal">Appeal</option>
+                    </select>
                   ) : (
-                    <div className="text-sm leading-relaxed p-3 rounded-lg" style={{ background: 'var(--surface-2)', color: 'var(--text-primary)' }}>
-                      {verifications[currentDirective.id]?.edited_text || currentDirective.text}
+                    <div className="text-sm p-2.5 bg-slate-50 border border-slate-200 rounded font-medium text-slate-900 flex items-center gap-2">
+                      {currentDirective.action_required === 'comply' ? <ShieldCheck size={16} className="text-slate-400" /> : <AlertTriangle size={16} className="text-slate-400" />}
+                      <span className="uppercase">{verifications[currentDirective.id]?.edited_action || currentDirective.action_required}</span>
                     </div>
                   )}
                 </div>
-
-                {/* Action + Confidence */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <div className="text-xs font-semibold mb-1.5 uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Action</div>
-                    {editingId === currentDirective.id ? (
-                      <select
-                        className="w-full text-sm p-2.5 rounded-lg cursor-pointer"
-                        style={{ background: 'var(--surface-2)', border: '1px solid var(--accent)', color: 'var(--text-primary)', fontFamily: 'var(--font-body)' }}
-                        defaultValue={currentDirective.action_required}
-                        onChange={(e) => updateEdit(currentDirective.id, 'edited_action', e.target.value)}
-                      >
-                        <option value="comply">Comply</option>
-                        <option value="appeal">Appeal</option>
-                      </select>
-                    ) : (
-                      <div className="text-sm p-2.5 rounded-lg font-bold uppercase flex items-center gap-1.5" style={{
-                        background: currentDirective.action_required === 'comply' ? 'rgba(16,185,129,0.12)' : 'rgba(239,68,68,0.12)',
-                        color: currentDirective.action_required === 'comply' ? 'var(--success)' : 'var(--danger)',
-                      }}>
-                        {currentDirective.action_required === 'comply' ? <ShieldCheck size={13} /> : <AlertTriangle size={13} />}
-                        {verifications[currentDirective.id]?.edited_action || currentDirective.action_required}
-                      </div>
-                    )}
-                  </div>
-                  <div>
-                    <div className="text-xs font-semibold mb-1.5 uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Confidence</div>
-                    <div className="text-sm p-2.5 rounded-lg font-bold flex items-center gap-1.5" style={{
-                      background: 'var(--surface-2)',
-                      color: currentDirective.confidence >= 0.8 ? 'var(--success)' : currentDirective.confidence >= 0.6 ? 'var(--warning)' : 'var(--danger)',
-                    }}>
-                      <Cpu size={13} />
-                      {Math.round(currentDirective.confidence * 100)}%
-                    </div>
+                <div>
+                  <label className="text-xs uppercase tracking-widest text-slate-500 font-semibold block mb-2">Confidence</label>
+                  <div className="text-sm p-2.5 bg-slate-50 border border-slate-200 rounded font-medium text-slate-900 flex items-center gap-2">
+                    <Cpu size={16} className="text-slate-400" />
+                    {Math.round(currentDirective.confidence * 100)}%
                   </div>
                 </div>
+              </div>
 
-                {/* Deadline */}
+              <div className="space-y-6 mb-8">
                 <div>
-                  <div className="text-xs font-semibold mb-1.5 uppercase tracking-widest flex items-center gap-1" style={{ color: 'var(--text-muted)' }}>
-                    <Calendar size={10} /> Deadline
-                  </div>
+                  <label className="text-xs uppercase tracking-widest text-slate-500 font-semibold flex items-center gap-1.5 mb-2">
+                    <Calendar size={14} /> Compliance Deadline
+                  </label>
                   {editingId === currentDirective.id ? (
-                    <input type="text" className="w-full text-sm p-2.5 rounded-lg"
-                      style={{ background: 'var(--surface-2)', border: '1px solid var(--accent)', color: 'var(--text-primary)', fontFamily: 'var(--font-body)', outline: 'none' }}
+                    <input type="text" className="w-full text-sm p-2.5 border border-slate-300 rounded focus:ring-1 focus:ring-slate-900 focus:border-slate-900 text-slate-900"
                       defaultValue={currentDirective.deadline}
                       onChange={(e) => updateEdit(currentDirective.id, 'edited_deadline', e.target.value)}
                     />
                   ) : (
-                    <div className="text-sm p-2.5 rounded-lg" style={{ background: 'var(--surface-2)', color: 'var(--warning)' }}>
+                    <div className="text-sm p-2.5 bg-slate-50 border border-slate-200 rounded font-medium text-slate-900">
                       {verifications[currentDirective.id]?.edited_deadline || currentDirective.deadline}
                     </div>
                   )}
                 </div>
 
-                {/* Department */}
                 <div>
-                  <div className="text-xs font-semibold mb-1.5 uppercase tracking-widest flex items-center gap-1" style={{ color: 'var(--text-muted)' }}>
-                    <Building2 size={10} /> Department
-                  </div>
+                  <label className="text-xs uppercase tracking-widest text-slate-500 font-semibold flex items-center gap-1.5 mb-2">
+                    <Building2 size={14} /> Assigned Department
+                  </label>
                   {editingId === currentDirective.id ? (
-                    <input type="text" className="w-full text-sm p-2.5 rounded-lg"
-                      style={{ background: 'var(--surface-2)', border: '1px solid var(--accent)', color: 'var(--text-primary)', fontFamily: 'var(--font-body)', outline: 'none' }}
+                    <input type="text" className="w-full text-sm p-2.5 border border-slate-300 rounded focus:ring-1 focus:ring-slate-900 focus:border-slate-900 text-slate-900"
                       defaultValue={currentDirective.responsible_department}
                       onChange={(e) => updateEdit(currentDirective.id, 'edited_department', e.target.value)}
                     />
                   ) : (
-                    <div className="text-sm p-2.5 rounded-lg" style={{ background: 'var(--surface-2)', color: 'var(--text-primary)' }}>
+                    <div className="text-sm p-2.5 bg-slate-50 border border-slate-200 rounded font-medium text-slate-900">
                       {verifications[currentDirective.id]?.edited_department || currentDirective.responsible_department}
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Action Buttons */}
-              <div className="flex gap-2">
+            {/* Action Buttons - Formal Group */}
+            <div className="border-t border-slate-200 pt-6 mt-auto">
+              <label className="text-xs uppercase tracking-widest text-slate-500 font-semibold block mb-3 text-center">Officer Verification Decision</label>
+              <div className="flex gap-3 mb-6">
                 <button onClick={() => setStatus(currentDirective.id, 'approved')}
-                  className="flex-1 py-2.5 rounded-lg text-sm font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-all duration-150"
-                  style={{
-                    background: verifications[currentDirective.id]?.status === 'approved' ? 'var(--success)' : 'rgba(16,185,129,0.1)',
-                    color: verifications[currentDirective.id]?.status === 'approved' ? '#fff' : 'var(--success)',
-                    border: `1px solid ${verifications[currentDirective.id]?.status === 'approved' ? 'var(--success)' : 'rgba(16,185,129,0.2)'}`,
-                  }}>
-                  <Check size={14} /> Approve
+                  className={`flex-1 py-2.5 rounded text-sm font-medium flex items-center justify-center gap-2 border transition-colors ${
+                    verifications[currentDirective.id]?.status === 'approved' 
+                      ? 'bg-emerald-600 text-white border-emerald-600' 
+                      : 'bg-white text-slate-700 border-slate-300 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200'
+                  }`}>
+                  <Check size={16} /> Approve
                 </button>
                 <button onClick={() => editingId === currentDirective.id ? setEditingId(null) : startEdit(currentDirective.id)}
-                  className="flex-1 py-2.5 rounded-lg text-sm font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-all duration-150"
-                  style={{
-                    background: verifications[currentDirective.id]?.status === 'edited' ? 'rgba(59,130,246,0.2)' : 'rgba(59,130,246,0.08)',
-                    color: 'var(--info)',
-                    border: `1px solid ${verifications[currentDirective.id]?.status === 'edited' ? 'var(--info)' : 'rgba(59,130,246,0.15)'}`,
-                  }}>
-                  <Pencil size={14} /> {editingId === currentDirective.id ? 'Done' : 'Edit'}
+                  className={`flex-1 py-2.5 rounded text-sm font-medium flex items-center justify-center gap-2 border transition-colors ${
+                    verifications[currentDirective.id]?.status === 'edited' || editingId === currentDirective.id
+                      ? 'bg-blue-600 text-white border-blue-600' 
+                      : 'bg-white text-slate-700 border-slate-300 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-200'
+                  }`}>
+                  <Pencil size={16} /> {editingId === currentDirective.id ? 'Save Edits' : 'Edit'}
                 </button>
                 <button onClick={() => setStatus(currentDirective.id, 'rejected')}
-                  className="flex-1 py-2.5 rounded-lg text-sm font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-all duration-150"
-                  style={{
-                    background: verifications[currentDirective.id]?.status === 'rejected' ? 'rgba(239,68,68,0.2)' : 'rgba(239,68,68,0.08)',
-                    color: 'var(--danger)',
-                    border: `1px solid ${verifications[currentDirective.id]?.status === 'rejected' ? 'var(--danger)' : 'rgba(239,68,68,0.15)'}`,
-                  }}>
-                  <X size={14} /> Reject
+                  className={`flex-1 py-2.5 rounded text-sm font-medium flex items-center justify-center gap-2 border transition-colors ${
+                    verifications[currentDirective.id]?.status === 'rejected' 
+                      ? 'bg-red-600 text-white border-red-600' 
+                      : 'bg-white text-slate-700 border-slate-300 hover:bg-red-50 hover:text-red-700 hover:border-red-200'
+                  }`}>
+                  <X size={16} /> Reject
                 </button>
               </div>
 
-              {/* Navigation */}
-              <div className="flex justify-between mt-5">
-                <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1}
-                  className="text-xs px-3 py-1.5 rounded-md disabled:opacity-30 flex items-center gap-1 cursor-pointer"
-                  style={{ color: 'var(--text-secondary)', background: 'var(--surface-2)' }}>
-                  <ChevronLeft size={12} /> Previous
-                </button>
-                <span className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>{currentPage} / {directives.length}</span>
-                <button onClick={() => setCurrentPage((p) => Math.min(directives.length, p + 1))} disabled={currentPage === directives.length}
-                  className="text-xs px-3 py-1.5 rounded-md disabled:opacity-30 flex items-center gap-1 cursor-pointer"
-                  style={{ color: 'var(--text-secondary)', background: 'var(--surface-2)' }}>
-                  Next <ChevronRight size={12} />
-                </button>
+              {/* Navigation / Finalize Buttons at Bottom Center */}
+              <div className="flex justify-center gap-4 border-t border-slate-100 pt-5">
+                {currentPage > 1 && (
+                  <button
+                    onClick={() => setCurrentPage(currentPage - 1)}
+                    className="flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-slate-900 bg-white border border-slate-200 hover:bg-slate-50 py-2.5 px-6 rounded-full transition-colors"
+                  >
+                    <ArrowLeft size={16} /> Previous
+                  </button>
+                )}
+                
+                {currentPage < directives.length ? (
+                  <button
+                    onClick={() => setCurrentPage(currentPage + 1)}
+                    className="flex items-center gap-2 text-sm font-semibold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 py-2.5 px-6 rounded-full transition-colors"
+                  >
+                    Next Directive <ArrowRight size={16} />
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleSubmit}
+                    disabled={!allReviewed || saving || approvedCount === 0}
+                    className="flex items-center gap-2 text-sm font-semibold text-white bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 py-2.5 px-8 rounded-full transition-colors shadow-sm"
+                  >
+                    {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                    {saving ? 'Saving...' : `Finalize & Submit (${approvedCount}/${directives.length})`}
+                  </button>
+                )}
               </div>
             </div>
-          )}
-        </div>
+
+          </div>
+        )}
       </div>
     </div>
   );

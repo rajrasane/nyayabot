@@ -290,6 +290,36 @@ async def analyze_case(case_id: str):
         for i, d in enumerate(extraction.get("directives", [])):
             d["id"] = f"directive-{i+1}"
             d["verification_status"] = "pending"
+            
+            # Correct the LLM's page number guess by finding actual text overlap
+            best_page = d.get("page_number", 1)
+            highest_overlap = -1
+            
+            import re
+            page_count = len(re.findall(r"\[PAGE \d+\]", case["raw_text"]))
+            
+            def get_page_raw_text(raw_text: str, page_num_1indexed: int) -> str:
+                pattern = rf"\[PAGE {page_num_1indexed}\](.*?)(?=\[PAGE \d+\]|$)"
+                match = re.search(pattern, raw_text, re.DOTALL)
+                return match.group(1).strip() if match else ""
+                
+            stop_words = {'the', 'a', 'an', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might', 'must', 'shall', 'to', 'of', 'in', 'on', 'at', 'by', 'for', 'with', 'from', 'and', 'or', 'but', 'not', 'this', 'that', 'it', 'its', 'as', 'so', 'if', 'then', 'than', 'such', 'also'}
+            def kw(text):
+                words = re.findall(r'\b[a-z0-9]+\b', text.lower())
+                return {w for w in words if w not in stop_words and len(w) > 2}
+                
+            d_kw = kw(d["text"])
+            for p in range(1, page_count + 1):
+                page_text = get_page_raw_text(case["raw_text"], p)
+                candidates = _find_best_match_in_page(d["text"], page_text)
+                if candidates:
+                    c_kw = kw(candidates[0])
+                    overlap = len(d_kw & c_kw)
+                    if overlap > highest_overlap:
+                        highest_overlap = overlap
+                        best_page = p
+                        
+            d["page_number"] = best_page
 
         case["extraction"] = extraction
         case["status"] = "analyzed"

@@ -96,7 +96,7 @@ export default function CasePage() {
       </div>
 
       {/* Case Header */}
-      <div className="card p-6 mb-6">
+      <div className="bg-white border border-slate-200 rounded-lg shadow-sm p-6 mb-6">
         <div className="flex items-start justify-between mb-5">
           <div>
             <div className="text-xs font-semibold uppercase tracking-widest mb-1.5" style={{ color: 'var(--accent)' }}>
@@ -162,20 +162,20 @@ export default function CasePage() {
 
       <div className="space-y-4 mb-8">
         {directives.map((d, i) => (
-          <div key={`${d.id}-${i}`} className="card p-5">
+          <div key={`${d.id}-${i}`} className="bg-white border border-slate-200 rounded-lg shadow-sm p-5">
             <div className="flex items-start justify-between gap-4 mb-3">
               <div className="flex items-center gap-2">
-                <span className="badge" style={{ background: 'var(--surface-2)', color: 'var(--text-muted)' }}>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-bold uppercase tracking-wider" style={{ background: 'var(--surface-2)', color: 'var(--text-muted)' }}>
                   <Hash size={10} /> {i + 1}
                 </span>
-                <span className="badge" style={{
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-bold uppercase tracking-wider" style={{
                   background: d.action_required === 'comply' ? 'rgba(16,185,129,0.12)' : 'rgba(239,68,68,0.12)',
                   color: d.action_required === 'comply' ? 'var(--success)' : 'var(--danger)',
                 }}>
                   {d.action_required === 'comply' ? <ShieldCheck size={10} /> : <AlertTriangle size={10} />}
                   {d.action_required}
                 </span>
-                <span className="badge" style={{ background: 'var(--surface-2)', color: 'var(--text-muted)' }}>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-bold uppercase tracking-wider" style={{ background: 'var(--surface-2)', color: 'var(--text-muted)' }}>
                   <FileText size={10} /> Page {d.page_number}
                 </span>
               </div>
@@ -224,7 +224,7 @@ export default function CasePage() {
           </Link>
           <button
             onClick={() => router.push(`/cases/${id}/verify`)}
-            className="btn-primary flex items-center gap-2"
+            className="bg-slate-900 hover:bg-slate-800 text-white font-medium rounded-md flex items-center gap-2"
           >
             Proceed to Verification <ArrowRight size={16} />
           </button>
