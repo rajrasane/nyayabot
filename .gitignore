@@ -1,1 +1,47 @@
+# ─── Python ──────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+.eggs/
+
+# ─── Python env ──────────────────────────────────────────
+venv/
+.venv/
+env/
+.env
+*.env.local
+
+# ─── Backend runtime (auto-generated) ────────────────────
+backend/nyayabot.db
+backend/uploads/
+backend/__pycache__/
+
+# ─── Node / Frontend ─────────────────────────────────────
+node_modules/
+frontend/node_modules/
+frontend/.next/
+frontend/.turbo/
+frontend/out/
+*.tsbuildinfo
+
+# ─── OS ──────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# ─── Editors ─────────────────────────────────────────────
+.vscode/settings.json
+.idea/
+*.sublime-project
+
+# ─── Hackathon research (not part of submission) ─────────
 Contest-Context/
+.agents/
+skills-lock.json

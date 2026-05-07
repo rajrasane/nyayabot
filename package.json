@@ -1,0 +1,14 @@
+{
+  "name": "nyayabot",
+  "version": "1.0.0",
+  "description": "AI Copilot for Court Judgment Compliance — AI for Bharat 2 Hackathon",
+  "private": true,
+  "scripts": {
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && python -m uvicorn main:app --reload --port 8000",
+    "install:frontend": "cd frontend && npm install",
+    "install:all": "cd frontend && npm install"
+  },
+  "keywords": ["legal-ai", "government", "karnataka", "court-compliance"],
+  "license": "MIT"
+}
