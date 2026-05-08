@@ -25,7 +25,9 @@ app = FastAPI(title="NyayaBot API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    # Allow localhost during development and frontend hosts in production.
+    # For the MVP we allow all origins so deployed frontends (Vercel) can call the API.
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
