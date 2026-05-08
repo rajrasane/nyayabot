@@ -10,7 +10,7 @@ from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
-from typing import List, Optional, Any
+from typing import List, Optional
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -564,13 +564,11 @@ def get_highlighted_pdf(case_id: str, directive_id: str):
         match = re.search(pattern, raw_text, re.DOTALL)
         return match.group(1).strip() if match else ""
 
-    # Use `doc.page_count` rather than relying on Document being iterable or sized.
-    for search_page_idx in [target_page] + [i for i in range(doc.page_count) if i != target_page]:
+    for search_page_idx in [target_page] + [i for i in range(len(doc)) if i != target_page]:
         page_raw = get_page_raw_text(raw_text, search_page_idx + 1)
         candidates = _find_best_match_in_page(directive_text, page_raw)
 
-        # Load page explicitly and type as Any to avoid static type checker complaints
-        page: Any = doc.load_page(search_page_idx)
+        page = doc[search_page_idx]
         for candidate in candidates:
             for length in [len(candidate), 80, 50, 40]:
                 snippet = candidate[:length].strip()
