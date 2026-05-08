@@ -570,26 +570,26 @@ def get_highlighted_pdf(case_id: str, directive_id: str):
 
         page = doc[search_page_idx]
         for candidate in candidates:
-            for length in [len(candidate), 80, 50, 40]:
-                snippet = candidate[:length].strip()
-                if len(snippet) < 10:
-                    continue
-                # Some type stubs may not expose `search_for` on Page; call defensively.
-                instances = []
-                search_fn = getattr(page, "search_for", None)
-                if callable(search_fn):
-                    try:
-                        instances = search_fn(snippet, quads=True)
-                    except TypeError:
-                        # Older PyMuPDF versions may not support `quads` kwarg.
-                        instances = search_fn(snippet)
-                if instances:
-                    for inst in instances:
-                        annot = page.add_highlight_annot(inst)
-                        annot.set_colors(stroke=[1, 0.85, 0])
-                        annot.update()
-                    highlighted = True
-                    break
+                for length in [len(candidate), 80, 50, 40]:
+                    snippet = candidate[:length].strip()
+                    if len(snippet) < 10:
+                        continue
+                    # Some type stubs may not expose `search_for` on Page; call defensively.
+                    instances = []
+                    search_fn = getattr(page, "search_for", None)
+                    if callable(search_fn):
+                        try:
+                            instances = search_fn(snippet, quads=True)
+                        except TypeError:
+                            # Older PyMuPDF versions may not support `quads` kwarg.
+                            instances = search_fn(snippet)
+                    if instances:
+                        for inst in instances:
+                            annot = page.add_highlight_annot(inst)
+                            annot.set_colors(stroke=[1, 0.85, 0])
+                            annot.update()
+                        highlighted = True
+                        break
             if highlighted:
                 break
         if highlighted:
