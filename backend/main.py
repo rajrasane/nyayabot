@@ -220,9 +220,7 @@ def get_ccms_pending():
 @app.post("/api/upload")
 async def upload_pdf(file: UploadFile = File(...)):
     """Step 1: Accept PDF, extract text, store case."""
-    # `file.filename` can be None according to some type checkers — guard against that.
-    filename = file.filename or ""
-    if not filename.lower().endswith(".pdf"):
+    if not file.filename.endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Only PDF files accepted")
 
     case_id = str(uuid.uuid4())[:8]
@@ -237,9 +235,7 @@ async def upload_pdf(file: UploadFile = File(...)):
     doc = fitz.open(pdf_path)
     full_text = ""
     page_count = doc.page_count
-    # Use explicit page loading to satisfy type checkers (Document may not be iterable in stubs).
-    for page_num in range(1, page_count + 1):
-        page = doc.load_page(page_num - 1)
+    for page_num, page in enumerate(doc, 1):
         full_text += f"\n[PAGE {page_num}]\n{page.get_text()}"
     doc.close()
 
@@ -570,26 +566,18 @@ def get_highlighted_pdf(case_id: str, directive_id: str):
 
         page = doc[search_page_idx]
         for candidate in candidates:
-                for length in [len(candidate), 80, 50, 40]:
-                    snippet = candidate[:length].strip()
-                    if len(snippet) < 10:
-                        continue
-                    # Some type stubs may not expose `search_for` on Page; call defensively.
-                    instances = []
-                    search_fn = getattr(page, "search_for", None)
-                    if callable(search_fn):
-                        try:
-                            instances = search_fn(snippet, quads=True)
-                        except TypeError:
-                            # Older PyMuPDF versions may not support `quads` kwarg.
-                            instances = search_fn(snippet)
-                    if instances:
-                        for inst in instances:
-                            annot = page.add_highlight_annot(inst)
-                            annot.set_colors(stroke=[1, 0.85, 0])
-                            annot.update()
-                        highlighted = True
-                        break
+            for length in [len(candidate), 80, 50, 40]:
+                snippet = candidate[:length].strip()
+                if len(snippet) < 10:
+                    continue
+                instances = page.search_for(snippet, quads=True)
+                if instances:
+                    for inst in instances:
+                        annot = page.add_highlight_annot(inst)
+                        annot.set_colors(stroke=[1, 0.85, 0])
+                        annot.update()
+                    highlighted = True
+                    break
             if highlighted:
                 break
         if highlighted:
